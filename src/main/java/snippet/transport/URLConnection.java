@@ -1,4 +1,4 @@
-package snippet.network;
+package snippet.transport;
 
 import java.io.BufferedReader;
 import java.io.IOException;

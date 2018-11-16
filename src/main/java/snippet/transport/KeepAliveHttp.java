@@ -1,4 +1,4 @@
-package snippet.network;
+package snippet.transport;
 
 public class KeepAliveHttp 
 {

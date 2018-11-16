@@ -1,4 +1,4 @@
-package snippet.network;
+package snippet.transport;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -38,7 +38,7 @@ public class HttpClient45 {
             httpClient = HttpClients.createDefault();
             // 创建httpGet远程连接实例
             HttpGet httpGet = new HttpGet(httpUrl);
-            // 设置请求头信息，鉴权
+            // 设置请求头信息，需要服务端验证支持
             httpGet.setHeader("Authorization", "Bearer da3efcbf-0845-4fe3-8aba-ee040be542c0");
             // 设置配置请求参数
             RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(35000)// 连接主机服务超时时间
@@ -52,7 +52,7 @@ public class HttpClient45 {
             // 通过返回对象获取返回数据
             HttpEntity entity = response.getEntity();
             // 通过EntityUtils中的toString方法将结果转换为字符串
-            result = EntityUtils.toString(entity, "utf-8");
+            result = EntityUtils.toString(entity, "UTF-8");
         } catch (ClientProtocolException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -97,6 +97,10 @@ public class HttpClient45 {
         // httpPost.setEntity(new StringEntity("json串"))；
         // httpPost.addHeader("Content-Type", "application/json");
         httpPost.addHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        // 添加token验证，需要服务端验证支持
+        paramMap.put("access_token", "da3efcbf-0845-4fe3-8aba-ee040be542c0");
+
         // 封装post请求参数
         if (MapUtils.isNotEmpty(paramMap)) {
             List<BasicNameValuePair> nvps = new ArrayList<>();
