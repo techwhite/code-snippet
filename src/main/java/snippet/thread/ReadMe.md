@@ -177,4 +177,4 @@ destroy方法也是废弃的方法。基本不会被使用到。
 
 最后附上一张线程状态变化图
 
-![avatar]()
+![avatar](https://github.com/techwhite/code-snippet/blob/master/src/main/python/snippet/threadstate.jpg?raw=true)
