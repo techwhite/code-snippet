@@ -34,7 +34,8 @@ public class ProducerConsumer {
         public Producer(Queue<Integer> queue, int maxSize, String name){ 
             super(name); this.queue = queue; this.maxSize = maxSize; 
         } 
-        @Override public void run() 
+        @Override 
+        public void run() 
         { 
             while (true) 
                 { 
@@ -65,13 +66,12 @@ public class ProducerConsumer {
     */
     class Consumer extends Thread { 
         private Queue<Integer> queue; 
-        private int maxSize; 
         public Consumer(Queue<Integer> queue, int maxSize, String name){ 
             super(name); 
             this.queue = queue; 
-            this.maxSize = maxSize; 
         } 
-        @Override public void run() { 
+        @Override 
+        public void run() { 
             while (true) { 
                 synchronized (queue) { 
                     while (queue.isEmpty()) { 

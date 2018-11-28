@@ -29,7 +29,6 @@ public class FlowController {
     private int next;
     private AtomicInteger token;
     private boolean stopped;
-    private Object o;
 
     /**
      * @param qps_ QPS to control. should > 0.

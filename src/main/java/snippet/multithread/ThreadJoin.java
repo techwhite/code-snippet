@@ -1,4 +1,4 @@
-package snippet.thread;
+package snippet.multithread;
 
 import java.io.IOException;
 
@@ -14,7 +14,6 @@ public class ThreadJoin {
             thread1.join();
             System.out.println("线程"+Thread.currentThread().getName()+"继续执行");
         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     } 
@@ -26,7 +25,6 @@ public class ThreadJoin {
             try {
                 Thread.currentThread().sleep(5000);
             } catch (InterruptedException e) {
-                // TODO: handle exception
             }
             System.out.println("线程"+Thread.currentThread().getName()+"执行完毕");
         }

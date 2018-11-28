@@ -58,7 +58,7 @@ join(long millis,int nanoseconds)    //第一参数为毫秒，第二个参数�
 假如在main线程中，调用thread.join方法，则main方法会等待thread线程执行完毕或者等待一定的时间。如果调用的是无参join方法，则等待thread执行完毕，如果调用的是指定了时间参数的join方法，则等待一定的事件。
 实际上调用join方法是调用了Object的wait方法，这个可以通过查看源码得知：
 
-``` 
+```java
 public final synchronized void join(long millis)
     throws InterruptedException {
         long base = System.currentTimeMillis();
@@ -95,9 +95,9 @@ interrupt，顾名思义，即中断的意思。单独调用interrupt方法可�
 
 那么能不能中断处于非阻塞状态的线程呢？看下面这个例子：
 
-```
+```java
 public class Test {
-     
+
     public static void main(String[] args) throws IOException  {
         Test test = new Test();
         MyThread thread = test.new MyThread();
@@ -105,11 +105,11 @@ public class Test {
         try {
             Thread.currentThread().sleep(2000);
         } catch (InterruptedException e) {
-             
+
         }
         thread.interrupt();
-    } 
-     
+    }
+
     class MyThread extends Thread{
         @Override
         public void run() {
@@ -127,7 +127,7 @@ public class Test {
 
 一般会在MyThread类中增加一个属性 isStop来标志是否结束while循环，然后再在while循环中判断isStop的值。
 
-```
+```java
 class MyThread extends Thread{
         private volatile boolean isStop = false;
         @Override
@@ -137,12 +137,13 @@ class MyThread extends Thread{
                 i++;
             }
         }
-         
+
         public void setStop(boolean stop){
             this.isStop = stop;
         }
     }
 ```
+
 那么就可以在外面通过调用setStop方法来终止while循环。
 
 7）stop方法
@@ -178,3 +179,66 @@ destroy方法也是废弃的方法。基本不会被使用到。
 最后附上一张线程状态变化图
 
 ![avatar](https://github.com/techwhite/code-snippet/blob/master/src/main/python/snippet/threadstate.jpg?raw=true)
+
+## 创建线程的三种方式的对比
+
+1、采用实现Runnable、Callable接口的方式创建多线程时，
+
+优势是：
+
+线程类只是实现了Runnable接口或Callable接口，还可以继承其他类。
+
+在这种方式下，多个线程可以共享同一个target对象，所以非常适合多个相同线程来处理同一份资源的情况，从而可以将CPU、代码和数据分开，形成清晰的模型，较好地体现了面向对象的思想。
+
+劣势是：
+
+编程稍微复杂，如果要访问当前线程，则必须使用Thread.currentThread()方法。
+
+2、使用继承Thread类的方式创建多线程时，
+
+优势是：
+
+编写简单，如果需要访问当前线程，则无需使用Thread.currentThread()方法，直接使用this即可获得当前线程。
+
+劣势是：
+
+线程类已经继承了Thread类，所以不能再继承其他父类。
+
+3、Runnable和Callable的区别
+
+(1) Callable规定（重写）的方法是call()，Runnable规定（重写）的方法是run()。
+
+(2) Callable的任务执行后可返回值，而Runnable的任务是不能返回值的。
+
+(3) call方法可以抛出异常，run方法不可以。
+
+(4) 运行Callable任务可以拿到一个Future对象，表示异步计算的结果。它提供了检查计算是否完成的方法，以等待计算的完成，并检索计算的结果。通过Future对象可以了解任务执行情况，可取消任务的执行，还可获取执行结果。
+
+(5) 一般情况下是配合ExecutorService来使用的，在ExecutorService接口中声明了若干个submit方法的重载版本：
+
+```java
+void shutdown();
+List<Runnable> shutdownNow();
+boolean isShutdown();
+boolean isTerminated();
+boolean awaitTermination(long timeout, TimeUnit unit)
+    throws InterruptedException;
+<T> Future<T> submit(Callable<T> task);
+<T> Future<T> submit(Runnable task, T result);
+Future<?> submit(Runnable task);
+<T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks)
+    throws InterruptedException;
+<T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks,
+                                long timeout, TimeUnit unit)
+    throws InterruptedException;
+<T> T invokeAny(Collection<? extends Callable<T>> tasks)
+    throws InterruptedException, ExecutionException;
+<T> T invokeAny(Collection<? extends Callable<T>> tasks,
+                long timeout, TimeUnit unit)
+    throws InterruptedException, ExecutionException, TimeoutException;
+<T> Future<T> submit(Callable<T> task);
+<T> Future<T> submit(Runnable task, T result);
+Future<?> submit(Runnable task);
+```
+
+暂时只需要知道Callable一般是和ExecutorService配合来使用的，一般情况下我们使用第一个submit方法和第三个submit方法，第二个submit方法很少使用。
