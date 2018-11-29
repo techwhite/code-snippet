@@ -28,7 +28,7 @@ public class ProducerConsumer {
     * @author WINDOWS 8 
     * 
     */
-    class Producer extends Thread { 
+    class Producer extends Thread {
         private Queue<Integer> queue; 
         private int maxSize; 
         public Producer(Queue<Integer> queue, int maxSize, String name){ 
