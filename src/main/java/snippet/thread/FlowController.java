@@ -25,7 +25,6 @@ public class FlowController {
     private int next;
     private AtomicInteger token;
     private boolean stopped;
-    ThreadPoolExecutor
 
     /**
      * @param qps_ QPS to control. should > 0.

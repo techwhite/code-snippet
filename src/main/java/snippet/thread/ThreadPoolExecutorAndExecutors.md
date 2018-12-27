@@ -227,6 +227,93 @@ public abstract class AbstractExecutorService implements ExecutorService {
     }
 ```
 
+ThreadPoolExecutor线程池的逻辑结构图:
+![avatar](https://github.com/techwhite/code-snippet/blob/master/src/main/resource/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%BB%93%E6%9E%84%E5%9B%BE.png)
+
+### 线程池执行任务的行为方式
+
+```text
+1. 当线程数小于核心线程数时，创建线程。
+2. 当线程数大于等于核心线程数，且任务队列未满时，将任务放入任务队列。
+3. 当线程数大于等于核心线程数，且任务队列已满
+    1. 若线程数小于最大线程数，创建线程
+    2. 若线程数等于最大线程数，抛出异常，拒绝任务
+```
+
+![avatar](https://github.com/techwhite/code-snippet/blob/master/src/main/resource/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E6%89%A7%E8%A1%8C%E4%BB%BB%E5%8A%A1%E6%96%B9%E5%BC%8F.png)
+
+使用举例
+
+```java
+public class ThreadPool {
+    private static ExecutorService pool;
+    public static void main( String[] args )
+    {
+        //优先任务队列
+        pool = new ThreadPoolExecutor(1, 2, 1000, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<Runnable>(),Executors.defaultThreadFactory(),new ThreadPoolExecutor.AbortPolicy());
+
+        for(int i=0;i<20;i++) {
+            pool.execute(new ThreadTask(i));
+        }
+    }
+}
+
+public class ThreadTask implements Runnable,Comparable<ThreadTask>{
+
+    private int priority;
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    public ThreadTask() {
+
+    }
+
+    public ThreadTask(int priority) {
+        this.priority = priority;
+    }
+
+    //当前对象和其他对象做比较，当前优先级大就返回-1，优先级小就返回1,值越小优先级越高
+    public int compareTo(ThreadTask o) {
+         return  this.priority>o.priority?-1:1;
+    }
+
+    public void run() {
+        try {
+            //让线程阻塞，使后续任务进入缓存队列
+            Thread.sleep(1000);
+            System.out.println("priority:"+this.priority+",ThreadName:"+Thread.currentThread().getName());
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+}
+```
+
+执行结果
+
+```text
+priority:0,ThreadName:pool-1-thread-1
+priority:9,ThreadName:pool-1-thread-1
+priority:8,ThreadName:pool-1-thread-1
+priority:7,ThreadName:pool-1-thread-1
+priority:6,ThreadName:pool-1-thread-1
+priority:5,ThreadName:pool-1-thread-1
+priority:4,ThreadName:pool-1-thread-1
+priority:3,ThreadName:pool-1-thread-1
+priority:2,ThreadName:pool-1-thread-1
+priority:1,ThreadName:pool-1-thread-1
+```
+
+更多详细请见： https://www.cnblogs.com/dafanjoy/p/9729358.html
+
 ## Executors
 
 Executors 各个方法的弊端：
@@ -234,3 +321,285 @@ Executors 各个方法的弊端：
 主要问题是堆积的请求处理队列可能会耗费非常大的内存，甚至 OOM。
 2）newCachedThreadPool 和 newScheduledThreadPool:
 主要问题是线程数最大数是 Integer.MAX_VALUE，可能会创建数量非常多的线程，甚至 OOM。
+
+Executors类是一个工厂类，提供了一系列静态工厂方法来创建不同的ExecutorService或 ScheduledExecutorService实例。
+
+```java
+public interface ExecutorService extends Executor {
+public interface Executor {
+
+    /**
+     * Executes the given command at some time in the future.  The command
+     * may execute in a new thread, in a pooled thread, or in the calling
+     * thread, at the discretion of the {@code Executor} implementation.
+     *
+     * @param command the runnable task
+     * @throws RejectedExecutionException if this task cannot be
+     * accepted for execution
+     * @throws NullPointerException if command is null
+     */
+    void execute(Runnable command);
+}
+```
+
+### 创建3种不同的ExecutorService（线程池）实例
+
+1.newSingleThreadExecutor
+创建一个单线程的线程池：启动一个线程负责按顺序执行任务，先提交的任务先执行。
+
+其原理是：任务会被提交到一个队列里，启动的那个线程会从队里里取任务，然后执行，执行完，再从队列里取下一个任务，再执行。如果该线程执行一个任务失败，并导致线程结束，系统会创建一个新的线程去执行队列里后续的任务，不会因为前面的任务有异常导致后面无辜的任务无法执行。
+源码：
+
+```java
+    public static ExecutorService newSingleThreadExecutor() {
+        return new FinalizableDelegatedExecutorService
+            (new ThreadPoolExecutor(1, 1,
+                                    0L, TimeUnit.MILLISECONDS,
+                                    new LinkedBlockingQueue<Runnable>()));
+    }
+```
+
+代码例子
+
+```java
+package com.wjg.unit4_2_5;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class Run {
+    public static void main(String[] args) {
+        Run run = new Run();
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        for (int i = 0; i < 5; i++) {
+            executorService.execute(run.new MyRunnable(" "+(i+1)));
+        }
+    }
+
+
+    public class MyRunnable implements Runnable{
+        private String username;
+
+        public MyRunnable(String username) {
+            this.username = username;
+        }
+
+
+        @Override
+        public void run() {
+            System.out.println(Thread.currentThread().getName()+" username="+username+" begin "+System.currentTimeMillis());
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName()+" username="+username+" end   "+System.currentTimeMillis());
+        }
+
+    }
+}
+```
+
+```text
+执行结果：
+pool-1-thread-1 username= 1 begin 1488269392403
+pool-1-thread-1 username= 1 end   1488269395409
+pool-1-thread-1 username= 2 begin 1488269395409
+pool-1-thread-1 username= 2 end   1488269398412
+pool-1-thread-1 username= 3 begin 1488269398413
+pool-1-thread-1 username= 3 end   1488269401418
+pool-1-thread-1 username= 4 begin 1488269401418
+pool-1-thread-1 username= 4 end   1488269404422
+pool-1-thread-1 username= 5 begin 1488269404422
+pool-1-thread-1 username= 5 end   1488269407423
+
+由执行结果的线程名字可以看出，线程池中只有一个线程。
+```
+
+2.newFixedThreadPool
+创建一个可重用的固定线程数量的线程池。即corePoolSize=线程池中的线程数= maximumPoolSize。
+
+如果没有任务执行，所有的线程都将等待。
+如果线程池中的所有线程都处于活动状态，此时再提交任务就在队列中等待，直到有可用线程。
+如果线程池中的某个线程由于异常而结束时，线程池就会再补充一条新线程。
+源码：
+
+```java
+    public static ExecutorService newFixedThreadPool(int nThreads) {
+        return new ThreadPoolExecutor(nThreads, nThreads,
+                                      0L, TimeUnit.MILLISECONDS,
+                                      new LinkedBlockingQueue<Runnable>());
+    }
+```
+
+3.newCachedThreadPool
+创建一个不限制线程数量的动态线程池。
+
+因为有多个线程存在，任务不一定会按照顺序执行。
+一个线程完成任务后，空闲时间达到60秒则会被结束。
+在执行新的任务时，当线程池中有之前创建的空闲线程就使用这个线程，否则就新建一条线程。
+源码：
+
+```java
+    public static ExecutorService newCachedThreadPool() {
+        return new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+                                      60L, TimeUnit.SECONDS,
+                                      new SynchronousQueue<Runnable>());
+    }
+```
+
+可以看到newCachedThreadPool使用的队列是SynchronousQueue，和前两个是不一样的。线程池的线程数可达到Integer.MAX_VALUE，即2147483647。此外由于会有线程的创建和销毁，所以会有一定的系统开销。
+
+代码例子
+
+```java
+package com.wjg.unit4_2_3;
+
+import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+
+public class Run {
+    public static void main(String[] args) {
+        Run run = new Run();
+        MyThreadFactory factory = run.new MyThreadFactory();
+        ExecutorService executorService = Executors.newCachedThreadPool(factory);
+        for (int i = 0; i < 5; i++) {
+            executorService.execute(run.new MyRunnable(" "+(i+1)));
+        }
+        Thread.sleep(3000);
+        System.out.println();
+        System.out.println();
+        for (int i = 0; i < 5; i++) {
+            executorService.execute(run.new MyRunnable(" "+(i+1)));
+        }
+    }
+
+
+    public class MyThreadFactory implements ThreadFactory{
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread thread = new Thread(r);
+            thread.setName("自定义名称："+new Date());
+            return thread;
+        }
+
+    }
+
+    public class MyRunnable implements Runnable{
+        private String username;
+
+        public MyRunnable(String username) {
+            this.username = username;
+        }
+
+        @Override
+        public void run() {
+            System.out.println(Thread.currentThread().getName()+" username="+username+" begin "+System.currentTimeMillis());
+            System.out.println(Thread.currentThread().getName()+" username="+username+" end   "+System.currentTimeMillis());
+        }
+
+    }
+}
+```
+
+```text
+执行结果：
+pool-1-thread-1 username= 1 begin 1488268086641
+pool-1-thread-3 username= 3 begin 1488268086641
+pool-1-thread-2 username= 2 begin 1488268086641
+pool-1-thread-2 username= 2 end   1488268086641
+pool-1-thread-4 username= 4 begin 1488268086642
+pool-1-thread-4 username= 4 end   1488268086642
+pool-1-thread-3 username= 3 end   1488268086641
+pool-1-thread-1 username= 1 end   1488268086641
+pool-1-thread-5 username= 5 begin 1488268086642
+pool-1-thread-5 username= 5 end   1488268086642
+
+pool-1-thread-5 username= 1 begin 1488268089647
+pool-1-thread-3 username= 3 begin 1488268089648
+pool-1-thread-4 username= 4 begin 1488268089648
+pool-1-thread-1 username= 2 begin 1488268089647
+pool-1-thread-1 username= 2 end   1488268089648
+pool-1-thread-4 username= 4 end   1488268089648
+pool-1-thread-3 username= 3 end   1488268089648
+pool-1-thread-2 username= 5 begin 1488268089648
+pool-1-thread-2 username= 5 end   1488268089648
+pool-1-thread-5 username= 1 end   1488268089648
+
+通过线程的名字，可以看出来线程是从池中取出来的，是可以复用的。
+```
+
+4.newSingleThreadExecutor 与 newFixedThreadPool(1) 的区别
+JavaDoc上说：
+
+Unlike the otherwise equivalent newFixedThreadPool(1) the returned executor is guaranteed not to be reconfigurable to use additional threads.
+举个例子：
+
+((ThreadPoolExecutor)newFixedThreadPool(1)).setCorePoolSize(3);
+即newFixedThreadPool(1)可以后期修改线程数，不保证线程只有一个。而newSingleThreadExecutor可以保证。
+
+### ScheduledExecutorService
+
+关于ScheduledExecutorService的内容，在下一篇文章中介绍。
+
+```java
+public interface ScheduledExecutorService extends ExecutorService {
+public interface ExecutorService extends Executor {
+
+public interface Executor {
+
+    /**
+     * Executes the given command at some time in the future.  The command
+     * may execute in a new thread, in a pooled thread, or in the calling
+     * thread, at the discretion of the {@code Executor} implementation.
+     *
+     * @param command the runnable task
+     * @throws RejectedExecutionException if this task cannot be
+     * accepted for execution
+     * @throws NullPointerException if command is null
+     */
+    void execute(Runnable command);
+}
+```
+
+1.newSingleThreadScheduledExecutor
+创建一个单线程的ScheduledExecutorService，在指定延时之后执行或者以固定的频率周期性的执行提交的任务。在线程池关闭之前如果有一个任务执行失败，并导致线程结束，系统会创建一个新的线程接着执行队列里的任务。
+
+源码：
+
+```java
+    public static ScheduledExecutorService newSingleThreadScheduledExecutor() {
+        return new DelegatedScheduledExecutorService
+            (new ScheduledThreadPoolExecutor(1));   //corePoolSize为1
+    }
+```
+
+还有一个重载的方法，多了一个ThreadFactory参数，ThreadFactory是用来确定新线程应该怎么创建的。
+
+```java
+    public static ScheduledExecutorService newSingleThreadScheduledExecutor(ThreadFactory threadFactory) {
+        return new DelegatedScheduledExecutorService
+            (new ScheduledThreadPoolExecutor(1, threadFactory));
+    }
+```
+
+2.newScheduledThreadPool
+创建一个固定线程数的ScheduledExecutorService对象，在指定延时之后执行或者以固定的频率周期性的执行提交的任务。
+
+```java
+    public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize) {
+        return new ScheduledThreadPoolExecutor(corePoolSize);
+    }
+```
+
+同样的，也有一个重载的方法：
+
+```java
+    public static ScheduledExecutorService newScheduledThreadPool(
+            int corePoolSize, ThreadFactory threadFactory) {
+        return new ScheduledThreadPoolExecutor(corePoolSize, threadFactory);
+    }
+```
