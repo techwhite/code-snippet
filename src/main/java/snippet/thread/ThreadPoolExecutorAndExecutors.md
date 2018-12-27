@@ -80,8 +80,6 @@ public abstract class AbstractExecutorService implements ExecutorService {
 
 　　　　（5）如果A>B&&A>C&&F,则处理C的任务，其他任务则不再处理抛出异常；
 
- 
-
 　　　　方法getActiveCount()的作用是取得有多少个线程正在执行任务。
 
 　　　　方法getPoolSize()的作用是获得当前线程池里面有多少个线程，这些线程数包括正在执行任务的线程，也包括正在休眠的线程。
@@ -312,7 +310,7 @@ priority:2,ThreadName:pool-1-thread-1
 priority:1,ThreadName:pool-1-thread-1
 ```
 
-更多详细请见： https://www.cnblogs.com/dafanjoy/p/9729358.html
+更多详细请见： <https://www.cnblogs.com/dafanjoy/p/9729358.html>
 
 ## Executors
 
