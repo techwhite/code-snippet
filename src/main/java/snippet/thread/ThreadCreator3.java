@@ -1,4 +1,4 @@
-package snippet.multithread;
+package snippet.thread;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
@@ -23,24 +23,24 @@ public interface RunnableFuture<V> extends Runnable, Future<V>
 （4）调用FutureTask对象的get()方法来获得子线程执行结束后的返回值
 */
 public class ThreadCreator3 {
-     
-    public static void main(String[] args) throws IOException  {
-        Callable<Integer> oneCallable = new SomeCallable<Integer>();   
-        //由Callable<Integer>创建一个FutureTask<Integer>对象：   
-        FutureTask<Integer> oneTask = new FutureTask<>(oneCallable);   
-        //注释：FutureTask<Integer>是一个包装器，它通过接受Callable<Integer>来创建，它同时实现了Future和Runnable接口。 
-        //由FutureTask<Integer>创建一个Thread对象：   
-        Thread oneThread = new Thread(oneTask);   
-        oneThread.start();   
-        //至此，一个线程就创建完成了。 
-    } 
-     
+
+    public static void main(String[] args) throws IOException {
+        Callable<Integer> oneCallable = new SomeCallable<Integer>();
+        // 由Callable<Integer>创建一个FutureTask<Integer>对象：
+        FutureTask<Integer> oneTask = new FutureTask<>(oneCallable);
+        // 注释：FutureTask<Integer>是一个包装器，它通过接受Callable<Integer>来创建，它同时实现了Future和Runnable接口。
+        // 由FutureTask<Integer>创建一个Thread对象：
+        Thread oneThread = new Thread(oneTask);
+        oneThread.start();
+        // 至此，一个线程就创建完成了。
+    }
+
     static class SomeCallable<V> extends Object implements Callable<V> {
 
         @Override
         public V call() throws Exception {
             return null;
         }
-    
+
     }
 }

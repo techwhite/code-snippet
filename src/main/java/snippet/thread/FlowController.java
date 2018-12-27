@@ -1,7 +1,7 @@
 // Copyright (c) 2017, Xiaomi, Inc.  All rights reserved.
 // This source code is licensed under the Apache License Version 2.0, which
 // can be found in the LICENSE file in the root directory of this source tree.
-package snippet.multithread;
+package snippet.thread;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -10,17 +10,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * Usage:
  *
- *   FlowController cntl = new FlowController(qps);
- *   while (true) {
- *       // call getToken before operation
- *       cntl.getToken();
- *       client.set(...);
- *   }
- *   cntl.stop();
+ * FlowController cntl = new FlowController(qps); while (true) { // call
+ * getToken before operation cntl.getToken(); client.set(...); } cntl.stop();
  *
- * About AtomicInteger: https://www.cnblogs.com/rever/p/8215743.html
- * About synchronized: https://blog.csdn.net/a158123/article/details/78607964 http://www.importnew.com/23511.html   
- * About Object.wait/Notify/NotifyAll：详见ProducerConsumer.java实现
+ * About AtomicInteger: https://www.cnblogs.com/rever/p/8215743.html About
+ * synchronized: https://blog.csdn.net/a158123/article/details/78607964
+ * http://www.importnew.com/23511.html About
+ * Object.wait/Notify/NotifyAll：详见ProducerConsumer.java实现
  */
 public class FlowController {
 
@@ -29,6 +25,7 @@ public class FlowController {
     private int next;
     private AtomicInteger token;
     private boolean stopped;
+    ThreadPoolExecutor
 
     /**
      * @param qps_ QPS to control. should > 0.
@@ -69,8 +66,8 @@ public class FlowController {
     }
 
     /**
-     * Call getToken() to do flow control when send request.
-     * The method will block for some time if QPS limit is reached to control the flow.
+     * Call getToken() to do flow control when send request. The method will block
+     * for some time if QPS limit is reached to control the flow.
      */
     public void getToken() {
         int t = token.decrementAndGet();

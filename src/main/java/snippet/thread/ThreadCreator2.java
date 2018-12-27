@@ -1,4 +1,4 @@
-package snippet.multithread;
+package snippet.thread;
 
 import java.io.IOException;
 
@@ -20,17 +20,17 @@ If you have extended some other classes, then you should implement runnable inte
 （3）调用线程对象的start()方法来启动该线程。
 */
 public class ThreadCreator2 {
-     
-    public static void main(String[] args) throws IOException  {
-        MyThread myThread = new MyThread();  
-        Thread thread = new Thread(myThread);  // 为了启动MyThread，需要首先实例化一个Thread，并传入自己的MyThread实例
-        thread.start();  
-    } 
-     
-    static class MyThread extends Object implements Runnable {  
+
+    public static void main(String[] args) throws IOException {
+        MyThread myThread = new MyThread();
+        Thread thread = new Thread(myThread); // 为了启动MyThread，需要首先实例化一个Thread，并传入自己的MyThread实例
+        thread.start();
+    }
+
+    static class MyThread extends Object implements Runnable {
         @Override
-        public void run() {  
+        public void run() {
             System.out.println("MyThread.run()");
         }
-    } 
+    }
 }

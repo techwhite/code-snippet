@@ -1,4 +1,4 @@
-package snippet.multithread;
+package snippet.thread;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -15,7 +15,7 @@ public class ThreadCreator4 {
 
         // 第一种方式
         FutureTask<Integer> futureTask = new FutureTask<Integer>(task);
-        executor.submit(futureTask);
+        executor.submit(futureTask); 
         // 或者
         // 第二种方式
         // Future<Integer> result = executor.submit(task);
