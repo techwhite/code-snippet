@@ -227,7 +227,7 @@ while(true){
 
 　　对于多线程模式，也就说来了client，服务器就会新建一个线程来处理该client的读写事件，如下图所示：
 
-![avatar](https://github.com/techwhite/code-snippet/blob/master/src/main/resource/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%BB%93%E6%9E%84%E5%9B%BE.png)
+![avatar](https://github.com/techwhite/code-snippet/blob/master/src/main/resource/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%BC%8F.jpg)
 
 　　这种模式虽然处理起来简单方便，但是由于服务器为每个client的连接都采用一个线程去处理，使得资源占用非常大。因此，当连接数量达到上限时，再有用户请求连接，直接会导致资源瓶颈，严重的可能会直接导致服务器崩溃。
 
@@ -239,7 +239,7 @@ while(true){
 
 　　在Reactor模式中，会先对每个client注册感兴趣的事件，然后有一个线程专门去轮询每个client是否有事件发生，当有事件发生时，便顺序处理每个事件，当所有事件处理完之后，便再转去继续轮询，如下图所示：
 
-![avatar](https://github.com/techwhite/code-snippet/blob/master/src/main/resource/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%BB%93%E6%9E%84%E5%9B%BE.png)
+![avatar](https://github.com/techwhite/code-snippet/blob/master/src/main/resource/Reactor%E6%A8%A1%E5%BC%8F.jpg)
 
 　　从这里可以看出，上面的五种IO模型中的多路复用IO就是采用Reactor模式。注意，上面的图中展示的 是顺序处理每个事件，当然为了提高事件处理速度，可以通过多线程或者线程池的方式来处理事件。
 
